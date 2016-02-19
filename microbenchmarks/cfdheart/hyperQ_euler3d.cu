@@ -19,6 +19,8 @@ __constant__ params_common d_common;
 params_unique unique[ALL_POINTS];								// cannot determine size dynamically so choose more than usually needed
 __constant__ params_unique d_unique[ALL_POINTS];
 
+//#define COMBINE_VER
+#define SPLIT_FACTOR ( 10 )
  
 /*
  * Options 
@@ -213,7 +215,12 @@ __device__ void heartwall_kernel() {
 	//	THREAD PARAMETERS
 	//======================================================================================================================================================
 
-	int bx = blockIdx.x;																// get current horizontal block index (0-n)
+#ifdef COMBINE_VER
+    int bx = blockIdx.x - gridDim.x / SPLIT_FACTOR;
+#else
+    int bx = blockIdx.x;
+#endif
+    bx = bx % ALL_POINTS;
 	int tx = threadIdx.x;																// get current horizontal thread index (0-n)
 	int ei_new;
 
@@ -2090,7 +2097,7 @@ int heartmain(int argc, char ** argv) {
 __device__ void cfdkernel(int nelr, int* elements_surrounding_elements, float* normals, float* variables, float* fluxes)
 {
 	const float smoothing_coefficient = float(0.2f);
-	const int i = (blockDim.x*blockIdx.x + threadIdx.x);
+	const int i = (blockDim.x*blockIdx.x + threadIdx.x) % nelr;
 
 	int j, nb;
 	float3 normal; float normal_len;
@@ -2220,134 +2227,8 @@ __device__ void cfdkernel(int nelr, int* elements_surrounding_elements, float* n
 
 __global__ void kernel(int nelr, int* elements_surrounding_elements, float* normals, float* variables, float* fluxes)
 {
-	if(blockIdx.x % 3 == 1) {
-		const float smoothing_coefficient = float(0.2f);
-		const int i = (blockDim.x*blockIdx.x + threadIdx.x);
-	
-		int j, nb;
-		float3 normal; float normal_len;
-		float factor;
-	
-		float density_i = variables[i + VAR_DENSITY*nelr];
-		float3 momentum_i;
-		momentum_i.x = variables[i + (VAR_MOMENTUM+0)*nelr];
-		momentum_i.y = variables[i + (VAR_MOMENTUM+1)*nelr];
-		momentum_i.z = variables[i + (VAR_MOMENTUM+2)*nelr];
-
-		float density_energy_i = variables[i + VAR_DENSITY_ENERGY*nelr];
-
-		float3 velocity_i;             				compute_velocity(density_i, momentum_i, velocity_i);
-		float speed_sqd_i                          = compute_speed_sqd(velocity_i);
-		float speed_i                              = sqrtf(speed_sqd_i);
-		float pressure_i                           = compute_pressure(density_i, density_energy_i, speed_sqd_i);
-		float speed_of_sound_i                     = compute_speed_of_sound(density_i, pressure_i);
-		float3 flux_contribution_i_momentum_x, flux_contribution_i_momentum_y, flux_contribution_i_momentum_z;
-		float3 flux_contribution_i_density_energy;	
-		compute_flux_contribution(density_i, momentum_i, density_energy_i, pressure_i, velocity_i, flux_contribution_i_momentum_x, flux_contribution_i_momentum_y, flux_contribution_i_momentum_z, flux_contribution_i_density_energy);
-	
-		float flux_i_density = float(0.0f);
-		float3 flux_i_momentum;
-		flux_i_momentum.x = float(0.0f);
-		flux_i_momentum.y = float(0.0f);
-		flux_i_momentum.z = float(0.0f);
-		float flux_i_density_energy = float(0.0f);
-		
-		float3 velocity_nb;
-		float density_nb, density_energy_nb;
-		float3 momentum_nb;
-		float3 flux_contribution_nb_momentum_x, flux_contribution_nb_momentum_y, flux_contribution_nb_momentum_z;
-		float3 flux_contribution_nb_density_energy;	
-		float speed_sqd_nb, speed_of_sound_nb, pressure_nb;
-	
-		#pragma unroll
-		for(j = 0; j < NNB; j++)
-		{
-			nb = elements_surrounding_elements[i + j*nelr];
-			normal.x = normals[i + (j + 0*NNB)*nelr];
-			normal.y = normals[i + (j + 1*NNB)*nelr];
-			normal.z = normals[i + (j + 2*NNB)*nelr];
-			normal_len = sqrtf(normal.x*normal.x + normal.y*normal.y + normal.z*normal.z);
-		
-			if(nb >= 0) 	// a legitimate neighbor
-			{
-				density_nb = variables[nb + VAR_DENSITY*nelr];
-				momentum_nb.x = variables[nb + (VAR_MOMENTUM+0)*nelr];
-				momentum_nb.y = variables[nb + (VAR_MOMENTUM+1)*nelr];
-				momentum_nb.z = variables[nb + (VAR_MOMENTUM+2)*nelr];
-				density_energy_nb = variables[nb + VAR_DENSITY_ENERGY*nelr];
-													compute_velocity(density_nb, momentum_nb, velocity_nb);
-				speed_sqd_nb                      = compute_speed_sqd(velocity_nb);
-				pressure_nb                       = compute_pressure(density_nb, density_energy_nb, speed_sqd_nb);
-				speed_of_sound_nb                 = compute_speed_of_sound(density_nb, pressure_nb);
-					                            compute_flux_contribution(density_nb, momentum_nb, density_energy_nb, pressure_nb, velocity_nb, flux_contribution_nb_momentum_x, flux_contribution_nb_momentum_y, flux_contribution_nb_momentum_z, flux_contribution_nb_density_energy);
-			
-				// artificial viscosity
-				factor = -normal_len*smoothing_coefficient*float(0.5f)*(speed_i + sqrtf(speed_sqd_nb) + speed_of_sound_i + speed_of_sound_nb);
-				flux_i_density += factor*(density_i-density_nb);
-				flux_i_density_energy += factor*(density_energy_i-density_energy_nb);
-				flux_i_momentum.x += factor*(momentum_i.x-momentum_nb.x);
-				flux_i_momentum.y += factor*(momentum_i.y-momentum_nb.y);
-				flux_i_momentum.z += factor*(momentum_i.z-momentum_nb.z);
-
-				// accumulate cell-centered fluxes
-				factor = float(0.5f)*normal.x;
-				flux_i_density += factor*(momentum_nb.x+momentum_i.x);
-				flux_i_density_energy += factor*(flux_contribution_nb_density_energy.x+flux_contribution_i_density_energy.x);
-				flux_i_momentum.x += factor*(flux_contribution_nb_momentum_x.x+flux_contribution_i_momentum_x.x);
-				flux_i_momentum.y += factor*(flux_contribution_nb_momentum_y.x+flux_contribution_i_momentum_y.x);
-				flux_i_momentum.z += factor*(flux_contribution_nb_momentum_z.x+flux_contribution_i_momentum_z.x);
-			
-				factor = float(0.5f)*normal.y;
-				flux_i_density += factor*(momentum_nb.y+momentum_i.y);
-				flux_i_density_energy += factor*(flux_contribution_nb_density_energy.y+flux_contribution_i_density_energy.y);
-				flux_i_momentum.x += factor*(flux_contribution_nb_momentum_x.y+flux_contribution_i_momentum_x.y);
-				flux_i_momentum.y += factor*(flux_contribution_nb_momentum_y.y+flux_contribution_i_momentum_y.y);
-				flux_i_momentum.z += factor*(flux_contribution_nb_momentum_z.y+flux_contribution_i_momentum_z.y);
-			
-				factor = float(0.5f)*normal.z;
-				flux_i_density += factor*(momentum_nb.z+momentum_i.z);
-				flux_i_density_energy += factor*(flux_contribution_nb_density_energy.z+flux_contribution_i_density_energy.z);
-				flux_i_momentum.x += factor*(flux_contribution_nb_momentum_x.z+flux_contribution_i_momentum_x.z);
-				flux_i_momentum.y += factor*(flux_contribution_nb_momentum_y.z+flux_contribution_i_momentum_y.z);
-				flux_i_momentum.z += factor*(flux_contribution_nb_momentum_z.z+flux_contribution_i_momentum_z.z);
-			}
-			else if(nb == -1)	// a wing boundary
-			{
-				flux_i_momentum.x += normal.x*pressure_i;
-				flux_i_momentum.y += normal.y*pressure_i;
-				flux_i_momentum.z += normal.z*pressure_i;
-			}
-			else if(nb == -2) // a far field boundary
-			{
-				factor = float(0.5f)*normal.x;
-				flux_i_density += factor*(ff_variable[VAR_MOMENTUM+0]+momentum_i.x);
-				flux_i_density_energy += factor*(ff_flux_contribution_density_energy[0].x+flux_contribution_i_density_energy.x);
-				flux_i_momentum.x += factor*(ff_flux_contribution_momentum_x[0].x + flux_contribution_i_momentum_x.x);
-				flux_i_momentum.y += factor*(ff_flux_contribution_momentum_y[0].x + flux_contribution_i_momentum_y.x);
-				flux_i_momentum.z += factor*(ff_flux_contribution_momentum_z[0].x + flux_contribution_i_momentum_z.x);
-			
-				factor = float(0.5f)*normal.y;
-				flux_i_density += factor*(ff_variable[VAR_MOMENTUM+1]+momentum_i.y);
-				flux_i_density_energy += factor*(ff_flux_contribution_density_energy[0].y+flux_contribution_i_density_energy.y);
-				flux_i_momentum.x += factor*(ff_flux_contribution_momentum_x[0].y + flux_contribution_i_momentum_x.y);
-				flux_i_momentum.y += factor*(ff_flux_contribution_momentum_y[0].y + flux_contribution_i_momentum_y.y);
-				flux_i_momentum.z += factor*(ff_flux_contribution_momentum_z[0].y + flux_contribution_i_momentum_z.y);
-
-				factor = float(0.5f)*normal.z;
-				flux_i_density += factor*(ff_variable[VAR_MOMENTUM+2]+momentum_i.z);
-				flux_i_density_energy += factor*(ff_flux_contribution_density_energy[0].z+flux_contribution_i_density_energy.z);
-				flux_i_momentum.x += factor*(ff_flux_contribution_momentum_x[0].z + flux_contribution_i_momentum_x.z);
-				flux_i_momentum.y += factor*(ff_flux_contribution_momentum_y[0].z + flux_contribution_i_momentum_y.z);
-				flux_i_momentum.z += factor*(ff_flux_contribution_momentum_z[0].z + flux_contribution_i_momentum_z.z);
-
-			}
-		}
-
-		fluxes[i + VAR_DENSITY*nelr] = flux_i_density;
-		fluxes[i + (VAR_MOMENTUM+0)*nelr] = flux_i_momentum.x;
-		fluxes[i + (VAR_MOMENTUM+1)*nelr] = flux_i_momentum.y;
-		fluxes[i + (VAR_MOMENTUM+2)*nelr] = flux_i_momentum.z;
-		fluxes[i + VAR_DENSITY_ENERGY*nelr] = flux_i_density_energy;
+	if(blockIdx.x < gridDim.x / SPLIT_FACTOR) {
+        cfdkernel(nelr, elements_surrounding_elements, normals, variables, fluxes);
 	} else {
 		heartwall_kernel();
 	}
@@ -2368,24 +2249,28 @@ void run_kernels(int nelr, int* elements_surrounding_elements, float* normals, f
 {
 	dim3 Dg(nelr / block_length), Db(block_length);
 	int numBlocks = nelr/block_length;
-	if(numBlocks > ALL_POINTS){ 
-		numBlocks = ALL_POINTS;
-	}
+	//if(numBlocks > ALL_POINTS){ 
+	//	numBlocks = ALL_POINTS;
+	//}
+    numBlocks *= 10;
     cudaStream_t streams[N];
     for(int i = 0; i < N; i++)
         cudaStreamCreate(&streams[i]);
 	StopWatchInterface *timer = 0;
 	sdkCreateTimer(&timer); 
 	sdkStartTimer(&timer);
-	//kernel<<<numBlocks,Db>>>(nelr, elements_surrounding_elements, normals, variables, fluxes);
-    Kernel1<<<numBlocks/3,Db, 0, streams[0]>>>(nelr, elements_surrounding_elements, normals, variables, fluxes);
-    Kernel2<<<numBlocks-numBlocks/3,Db, 0, streams[1]>>>();
+#ifdef COMBINE_VER
+	kernel<<<numBlocks,Db>>>(nelr, elements_surrounding_elements, normals, variables, fluxes);
+#else
+    Kernel1<<<numBlocks/SPLIT_FACTOR,Db, 0, streams[0]>>>(nelr, elements_surrounding_elements, normals, variables, fluxes);
+    Kernel2<<<numBlocks-numBlocks/SPLIT_FACTOR,Db, 0, streams[1]>>>();
+#endif
 	getLastCudaError("kernel failed");
 	cudaThreadSynchronize();
 	//	CUT_SAFE_CALL( cutStopTimer(timer) );  
 	sdkStopTimer(&timer); 
 
-	std::cout  << "runtime: " << sdkGetAverageTimerValue(&timer) << std::endl;
+	std::cout  << "runtime: " << sdkGetAverageTimerValue(&timer) << ", numblocks: " << numBlocks << std::endl;
 }
 
 /*
