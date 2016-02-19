@@ -2220,7 +2220,7 @@ __device__ void cfdkernel(int nelr, int* elements_surrounding_elements, float* n
 
 __global__ void kernel(int nelr, int* elements_surrounding_elements, float* normals, float* variables, float* fluxes)
 {
-	if(threadIdx.x % 3 == 1) {
+	if(blockIdx.x % 3 == 1) {
 		const float smoothing_coefficient = float(0.2f);
 		const int i = (blockDim.x*blockIdx.x + threadIdx.x);
 	
@@ -2374,10 +2374,18 @@ void run_kernels(int nelr, int* elements_surrounding_elements, float* normals, f
     cudaStream_t streams[N];
     for(int i = 0; i < N; i++)
         cudaStreamCreate(&streams[i]);
+	StopWatchInterface *timer = 0;
+	sdkCreateTimer(&timer); 
+	sdkStartTimer(&timer);
 	//kernel<<<numBlocks,Db>>>(nelr, elements_surrounding_elements, normals, variables, fluxes);
     Kernel1<<<numBlocks/3,Db, 0, streams[0]>>>(nelr, elements_surrounding_elements, normals, variables, fluxes);
     Kernel2<<<numBlocks-numBlocks/3,Db, 0, streams[1]>>>();
 	getLastCudaError("kernel failed");
+	cudaThreadSynchronize();
+	//	CUT_SAFE_CALL( cutStopTimer(timer) );  
+	sdkStopTimer(&timer); 
+
+	std::cout  << "runtime: " << sdkGetAverageTimerValue(&timer) << std::endl;
 }
 
 /*
@@ -2524,7 +2532,6 @@ int main(int argc, char** argv)
 	// these need to be computed the first time in order to compute time step
 	std::cout << "Starting..." << std::endl;
 
-	StopWatchInterface *timer = 0;
 	  //	unsigned int timer = 0;
 	
 	
@@ -2532,14 +2539,7 @@ int main(int argc, char** argv)
 	
 	// CUT_SAFE_CALL( cutCreateTimer( &timer));
 	// CUT_SAFE_CALL( cutStartTimer( timer));
-	sdkCreateTimer(&timer); 
-	sdkStartTimer(&timer);
 	run_kernels(nelr, elements_surrounding_elements, normals, variables, fluxes);
-	cudaThreadSynchronize();
-	//	CUT_SAFE_CALL( cutStopTimer(timer) );  
-	sdkStopTimer(&timer); 
-
-	std::cout  << "runtime: " << sdkGetAverageTimerValue(&timer) << std::endl;
 
 	
 	std::cout << "Cleaning up..." << std::endl;
