@@ -1,5 +1,6 @@
 import numpy as np
 from sys import argv
+
 class group(): #Contains group information
 	def __init__(self):
 		self.grp = -1
@@ -85,8 +86,6 @@ def mathematica():
 			for i in grp1.weight:
 				f.write(str(i)+" ")
 
-
-####################		
 def grpinfo():
 	global vs, grps, edgs, groups, total
 	c = 0
@@ -149,8 +148,6 @@ def script2():
 	f.write("% Edges that are inside a group: "+str(100*c2/(c+c2))+"\n")
 	f.close()
 
-
-
 if __name__ == "__main__":
 	global vs, grps, edgs, groups, total
 	vs = []
@@ -176,8 +173,7 @@ if __name__ == "__main__":
 	grpinfo()
 	script2()
 	print("")
-	print("Making Mathematica Files")
+	#print("Making Mathematica Files")
 	#mathematica()
 
-	input("\nENTERtoEXIT")
-	
+	#input("\nENTERtoEXIT")

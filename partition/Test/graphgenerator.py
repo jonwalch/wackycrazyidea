@@ -1,8 +1,8 @@
 import random as rn
 
-NUM_VERTICIES = 10000000
-MAX_OUTGOING_EDGES_PER_GROUP = 20
-MAX_VERT_PER_GROUP = 1000000
+NUM_VERTICIES = 100000000
+MAX_OUTGOING_EDGES_PER_GROUP = 5
+MAX_VERT_PER_GROUP = 8000000
 graph = []
 vlist = []
 end = 0
@@ -36,7 +36,7 @@ for i, temp in enumerate(graph):
             j += 1
     print(str(i),"/",str(len(graph)))
 
-with open("fake1a.dat","w") as f:
+with open("arg2.dat","w") as f:
     for g in graph:
         if [] not in g:
             for i in g:
@@ -44,6 +44,6 @@ with open("fake1a.dat","w") as f:
                 f.write(i+"\n")
             #print()
 
-with open("fake1b.dat","w") as f:
+with open("arg1.dat","w") as f:
     for i in vlist:
-        f.write(i+"\n") 
+        f.write(i+"\n")    
