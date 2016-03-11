@@ -72,8 +72,8 @@ int main(int argc, char *argv[]) {
 	for(int x = 0; x < numVertices; x++) {
 		G[x].newStart = newStart;
 		
+		totalEdgesInGraph += G[x].outgoingEdges.size() + G[x].totalEdges - 1;//(G[x].totalEdges * 2) - 1;
 		newStart += G[x].totalEdges;
-		totalEdgesInGraph += (G[x].totalEdges * 2) - 1;
 	}
 	
 	//Figure out vertex mapping for edge lists:
@@ -93,10 +93,10 @@ int main(int argc, char *argv[]) {
 	ofstream mapFile(ss1.str().c_str());
 	mapFile << numVertices << "\n";
 	for(int x = 0; x < numVertices; x++) {
-		mapFile << G[x].newStart << "\n";
+		mapFile << G[x].newStart + 1 << " " << (G[x].newStart + 1) + G[x].incomingEdges.size() << "\n";
 	}
 	mapFile.close();
-	
+
 	//Output new graph
 	stringstream ss2;
 	ss2 << argv[1] << ".transgraph";
@@ -106,25 +106,25 @@ int main(int argc, char *argv[]) {
 		int v = G[x].newStart;
 		
 		for(int y = 0; y < G[x].incomingEdges.size(); y++) {
-			graphFile << G[x].incomingEdges[y] << " 99999 ";
+			graphFile << (G[x].incomingEdges[y] + 1) << " 99999 ";
 			if(y > 0) {
-				graphFile << v - 1 << " 99999 ";
+				graphFile << v << " 99999 ";
 			}
 			if(y < G[x].incomingEdges.size() - 1) {
-				graphFile << v + 1 << " 99999 ";
+				graphFile << v + 2 << " 99999 ";
 			} else if(G[x].outgoingEdges.size() > 0) {
-				graphFile << v + 1 << " 1 ";
+				graphFile << v + 2 << " 1 ";
 			}
 			graphFile << "\n";
 			v++;
 		}
 		for(int y = 0; y < G[x].outgoingEdges.size(); y++) {
-			graphFile << G[x].outgoingEdges[y] << " 99999 ";
+			graphFile << (G[x].outgoingEdges[y] + 1) << " 99999 ";
 			if(y > 0 || G[x].incomingEdges.size() > 0) {
-				graphFile << v - 1 << " 1 ";
+				graphFile << v << " 1 ";
 			}
 			if(y < G[x].outgoingEdges.size() - 1) {
-				graphFile << v + 1 << " 1 ";
+				graphFile << v + 2 << " 1 ";
 			}
 			graphFile << "\n";
 			v++;
