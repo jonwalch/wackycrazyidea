@@ -1,14 +1,17 @@
 import random as rn
 
-    
+NUM_VERTICIES = 10000000
+MAX_OUTGOING_EDGES_PER_GROUP = 20
+MAX_VERT_PER_GROUP = 1000000
 graph = []
 vlist = []
 end = 0
 c = 0
 o = ""
-while(len(vlist)< 10000):
+
+while(len(vlist)< NUM_VERTICIES):
     temp = []
-    x = rn.randint(1,500)
+    x = rn.randint(1,MAX_VERT_PER_GROUP)
     for i in range(end, end+x):
         temp.append(str(i)+"\t"+str(i+1))
         vlist.append(str(i)+"\t"+str(c))
@@ -23,7 +26,7 @@ while(len(vlist)< 10000):
 print("")
 for i, temp in enumerate(graph):
     j = 0
-    while j < rn.randint(1,20):
+    while j < rn.randint(1,MAX_OUTGOING_EDGES_PER_GROUP):
         y = rn.randint(0,len(graph)-1)
         t = rn.randint(0,len(graph[y])-1)
         if i != y:
@@ -43,6 +46,4 @@ with open("fake1a.dat","w") as f:
 
 with open("fake1b.dat","w") as f:
     for i in vlist:
-        f.write(i+"\n")
-
-            
+        f.write(i+"\n") 
