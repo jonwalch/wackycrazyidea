@@ -59,34 +59,7 @@ def read_edges(filename):
 			groups[grps[i1]].connect(grps[i2]) 
 			total += 1
 
-def mathematica():
-	global vs, grps, edgs, groups, total
-
-	filename = input("File name: ")
-	with open(filename,"w") as f:	
-		for i, v in enumerate(vs):
-			for e in edgs[i]:
-				f.write(str(v)+"->"+str(e)+" ")
-
-	with open("color"+filename, "w") as f:
-		for i, v in enumerate(vs):
-			f.write(str(grps[i])+" ")
-	
-	with open("groups_"+filename, "w") as f:
-		temp = groups
-		for grp in temp:
-			grp1 = temp[grp]
-			for i in grp1.connceted_groups:
-				f.write(str(grp1.grp)+"->"+str(i)+" ")
-
-	with open("group_weight_"+filename, "w") as f:
-		temp = groups
-		for grp in temp:
-			grp1 = temp[grp]
-			for i in grp1.weight:
-				f.write(str(i)+" ")
-
-def grpinfo():
+def printGroupInfo():
 	global vs, grps, edgs, groups, total
 	c = 0
 	c2 = 0
@@ -115,7 +88,7 @@ def grpinfo():
 	print("% Edges that are b/w groups: ", 100*c/(c+c2))
 	print("% Edges that are inside a group: ", 100*c2/(c+c2))
 
-def script2():
+def writeGroupInfo():
 	global vs, grps, edgs, groups, total
 	f = open("report.dat","w")
 	c = 0
@@ -148,6 +121,33 @@ def script2():
 	f.write("% Edges that are inside a group: "+str(100*c2/(c+c2))+"\n")
 	f.close()
 
+def mathematica():
+	global vs, grps, edgs, groups, total
+
+	filename = input("File name: ")
+	with open(filename,"w") as f:	
+		for i, v in enumerate(vs):
+			for e in edgs[i]:
+				f.write(str(v)+"->"+str(e)+" ")
+
+	with open("color"+filename, "w") as f:
+		for i, v in enumerate(vs):
+			f.write(str(grps[i])+" ")
+	
+	with open("groups_"+filename, "w") as f:
+		temp = groups
+		for grp in temp:
+			grp1 = temp[grp]
+			for i in grp1.connceted_groups:
+				f.write(str(grp1.grp)+"->"+str(i)+" ")
+
+	with open("group_weight_"+filename, "w") as f:
+		temp = groups
+		for grp in temp:
+			grp1 = temp[grp]
+			for i in grp1.weight:
+				f.write(str(i)+" ")
+
 if __name__ == "__main__":
 	global vs, grps, edgs, groups, total
 	vs = []
@@ -170,8 +170,8 @@ if __name__ == "__main__":
 	print("Loading file2...")
 	read_edges(file2)
 
-	grpinfo()
-	script2()
+	printGroupInfo()
+	writeGroupInfo()
 	print("")
 	#print("Making Mathematica Files")
 	#mathematica()
