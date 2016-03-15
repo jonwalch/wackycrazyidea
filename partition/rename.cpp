@@ -25,8 +25,9 @@ int main(int argc, char *argv[]) {
 	//Read in vertex map:
 	int * map = (int *) malloc(sizeof(int) * numVertices);
 	for(int x = 0; x < numVertices; x++) {
-		int vertex;
+		int vertex, garbage;
 		partFile >> vertex;
+		partFile >> garbage;
 		map[vertex] = x;
 	}
 	
