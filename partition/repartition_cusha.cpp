@@ -64,8 +64,11 @@ int main(int argc, char *argv[])
     int ori_vertex_num;
     vmapfile >> ori_vertex_num;
     int * vmap = new int[ori_vertex_num + 1];
-    for(int i = 0; i < ori_vertex_num+1; i++)
+    int * vendmap = new int[ori_vertex_num + 1];
+    for(int i = 0; i < ori_vertex_num+1; i++) {
         vmapfile >> vmap[i];
+        vmapfile >> vendmap[i];
+    }
     vmapfile >> tmp;
     assert(!vmapfile.good());
     vmapfile.close();
@@ -88,6 +91,7 @@ int main(int argc, char *argv[])
         parts[i].vlist.clear();
 
         parts[i].ori_vertex_num = 0;
+        parts[i].ori_edge_num = 0;
         parts[i].ovlist.clear();
         parts[i].waitinglist.clear();
     }
@@ -204,13 +208,15 @@ int main(int argc, char *argv[])
     // compute score for original vertex to facilitate partition
     /**************************************************/
     original_vertex * ov = new original_vertex[ori_vertex_num];
+    int total_ori_edge_num = 0;
     for(int i = 0; i < ori_vertex_num; i++)
     {
-        ov[i].begin = vmap[i];
-        assert((vmap[i+1] + vmap[i]) % 2 == 0);
-        ov[i].end = (vmap[i+1] + vmap[i]) / 2;
+        ov[i].begin = vmap[i] - 1;
+        ov[i].end = vendmap[i] - 1;
+        assert(ov[i].end >= ov[i].begin);
         ov[i].plist.clear();
         ov[i].part_id = -1;
+        total_ori_edge_num += ov[i].end - ov[i].begin;
 
         // full score for this vertex, * 2 since cutting edge scores 1
         int fullscore = (ov[i].end - ov[i].begin) * 2;
@@ -218,7 +224,11 @@ int main(int argc, char *argv[])
 
         // look up and insert the partition of this generated vertex in plist
         for(int j = ov[i].begin; j < ov[i].end; j++)
+        {
+            if(g.vertexes[j].oedge_id < 0)
+                cerr << "ERROR: " << i << " " << j << " " << ov[i].end << endl;
             updatePartScore(&ov[i].plist, &g, &g.vertexes[j], true);
+        }
 
         // sort plist
         if(ov[i].plist.size() > 1)
@@ -230,7 +240,7 @@ int main(int argc, char *argv[])
             total_score += it->score;
             it->score -= fullscore;
         }
-        assert(total_score == fullscore);
+        //assert(total_score == fullscore);
 
         // add this vertex to the waiting list of partition
         for(it = ov[i].plist.begin(); it != ov[i].plist.end(); it++)
@@ -249,6 +259,8 @@ int main(int argc, char *argv[])
         //    cout << endl;
         //}
     }
+    edge_per_part = (total_ori_edge_num + maxpart) / (maxpart + 1);
+    cout << "Total original edge number: " << total_ori_edge_num << ", total partition number: " << maxpart+1 << ", edge per partition: " << edge_per_part << endl;
 
     /**************************************************/
 
@@ -291,29 +303,44 @@ int main(int argc, char *argv[])
 
         if(parts[i].ori_edge_num < edge_per_part)
         {
-            //cout << "Partition " << i << " doesn't enough vertexes."<< endl;
+            cout << "Partition " << i << " shorts for " << edge_per_part - parts[i].ori_edge_num << " edges in the 1st round."<< endl;
             remainingpartlist.push_back(i);
         }
+        else
+            cout << "Partition " << i << " has " << parts[i].ori_edge_num << " edges in the 1st round."<< endl;
     }
 
-    // find vertexes which do not have home yet
+    // find vertices which do not have home yet
+    int rr_pid = 0;
     for(int i = 0; i < ori_vertex_num; i++)
     {
         if(ov[i].part_id >= 0)
             continue;
 
         // select partition from the remainingpartlist
-        //cout << "Vertex " << i << " doesn't find a home in the 1st process."<< endl;
+        //cout << "Vertex " << i << " doesn't find a home in the 1st round."<< endl;
         assert(remainingpartlist.size() > 0);
-        vector<int>::iterator it;
-        it = remainingpartlist.begin();
-        //assert(parts[*it].ori_vertex_num < vertex_per_part);
-        assert(parts[*it].ori_edge_num < edge_per_part);
-        parts[*it].ovlist.push_back(i);
-        parts[*it].ori_vertex_num++;
-        parts[*it].ori_edge_num += ov[i].end - ov[i].begin;
-        if(parts[*it].ori_edge_num >= edge_per_part)
-            remainingpartlist.erase(it);
+        if(ov[i].end - ov[i].begin == 0)
+        {
+            // round robin
+            parts[rr_pid].ovlist.push_back(i);
+            parts[rr_pid].ori_vertex_num++;
+            ov[i].part_id = rr_pid;
+            rr_pid = (rr_pid + 1) % (maxpart + 1);
+        }
+        else
+        {
+            vector<int>::iterator it;
+            it = remainingpartlist.begin();
+            //assert(parts[*it].ori_vertex_num < vertex_per_part);
+            assert(parts[*it].ori_edge_num < edge_per_part);
+            parts[*it].ovlist.push_back(i);
+            parts[*it].ori_vertex_num++;
+            parts[*it].ori_edge_num += ov[i].end - ov[i].begin;
+            ov[i].part_id = *it;
+            if(parts[*it].ori_edge_num >= edge_per_part)
+                remainingpartlist.erase(it);
+        }
     }
 
     for(vector<int>::iterator it = remainingpartlist.begin(); it != remainingpartlist.end(); it++)
@@ -328,6 +355,12 @@ int main(int argc, char *argv[])
         for(vector<int>::iterator it = parts[i].ovlist.begin(); it != parts[i].ovlist.end(); it++)
             fpfile << *it << endl;
     }
+
+    // output the vertex partition results
+    ofstream fvpfile("final.vertex.part");
+    fvpfile << ori_vertex_num << endl;
+    for(int i = 0; i < ori_vertex_num; i++)
+        fvpfile << i << " " << ov[i].part_id << endl;
 
     /**************************************************/
 
