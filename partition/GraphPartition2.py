@@ -6,6 +6,7 @@ class group(): #Contains group information
 		self.grp = -1
 		self.inner = 0 
 		self.outter = 0
+		self.bad = 0 
 		self.count = 0
 		self.connected_groups = []
 		self.weight = []
@@ -27,13 +28,21 @@ class group(): #Contains group information
 		if grp2 == self.grp:
 			self.inner += 1
 		else:
-			if i1 in connecting_vs:
-				if i2 not in connecting_vs[i1]:
-					connecting_vs[i1].append(i2)
-					self.inner += 1
+			if i1 in self.connecting_vs:
+				if i2 not in self.connecting_vs[i1]:
+					self.connecting_vs[i1].append(i2)
+					self.outter += 1
 			else:
-				connecting_vs[i1] = [i2]
-				self.inner += 1
+				self.connecting_vs[i1] = [i2]
+				self.outter += 1
+			if grp2 not in self.connected_groups:
+				self.connected_groups.append(grp2)
+				self.weight.append(1)
+			else:
+				indx = self.connected_groups.index(grp2)
+				self.weight[indx] += 1
+
+			self.bad += 1
 
 
 
@@ -67,11 +76,10 @@ def read_edges(filename):
 			if len(line) != 2:
 				print("Error: ", line)
 				continue
-
 			i1 = int(line[0])
 			i2 = int(line[1])
 			edgs[i1].append(vs[i2])
-			groups[grps[i1]].connect2(i1,i2grps[i2])  
+			groups[grps[i1]].connect2(i1,i2,grps[i2])  
 			total += 1
 
 def printGroupInfo():
@@ -92,6 +100,7 @@ def printGroupInfo():
 		print("Number of internal edges: ", group.inner)
 		print("Number of edges to other groups: ", group.outter)
 		print("Connected groups: ", ",".join([str(i) for i in group.connected_groups]))
+		print(group.bad-group.outter)
 		print("")
 		c += group.outter
 		c2 += group.inner
@@ -177,8 +186,8 @@ if __name__ == "__main__":
 		file1 = argv[1]
 		file2 = argv[2]
 	except:
-		file1 = input("Group info: ")
-		file2 = input("Edge info: ")
+		file1 = "fake1b.dat"#input("Group info: ")
+		file2 = "fake1a.dat"#input("Edge info: ")
 
 	print("Loading file1...")
 	read_grps(file1)
