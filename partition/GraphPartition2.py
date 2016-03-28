@@ -198,8 +198,8 @@ if __name__ == "__main__":
 		file1 = argv[1]
 		file2 = argv[2]
 	except:
-		file1 = "arg1.dat"#input("Group info: ")
-		file2 = "arg2.dat"#input("Edge info: ")
+		file1 = input("Group info: ")
+		file2 = input("Edge info: ")
 
 	print("Loading file1...")
 	read_grps(file1)
