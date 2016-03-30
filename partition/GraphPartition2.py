@@ -30,12 +30,12 @@ class group(): #Contains group information
 			self.inner += 1
 		else:
 			if i1 in self.connecting_vs:
-				if i2 not in self.connecting_vs[i1]:
-					self.connecting_vs[i1].append(i2)
+				if grp2 not in self.connecting_vs[i1]:
+					self.connecting_vs[i1].append(grp2)
 					self.outter += 1
 					cond = 1
 			else:
-				self.connecting_vs[i1] = [i2]
+				self.connecting_vs[i1] = [grp2]
 				self.outter += 1
 				cond = 1
 			if grp2 not in self.connected_groups:
@@ -105,7 +105,7 @@ def printGroupInfo():
 		print("Number of internal edges: ", group.inner)
 		print("Number of unique connections to other groups: ", group.outter)
 		print("Connected groups: ", ",".join([str(i) for i in group.connected_groups]))
-		#print(group.bad-group.outter)
+		print(group.bad-group.outter)
 		print("")
 		c3 += group.outter
 		c2 += group.inner
