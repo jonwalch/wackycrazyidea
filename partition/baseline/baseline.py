@@ -1,6 +1,5 @@
-#usage python3.3 baseline.py edgelist neighborinfo num_partition
+#usage python3.3 baseline.py neighborinfo num_partition
 import sys
-import pprint
 
 class Node:
   def __init__(self, num, neighbors):
@@ -9,37 +8,35 @@ class Node:
     self.groupNum = -1
 
 def baseline1():
-  pp = pprint.PrettyPrinter(indent=4)
 
-  if len(sys.argv) != 4:
-    print("wrong num cmd line args. usage is python3.3 baseline.py file1 file2 num_partition")
+  if len(sys.argv) != 3:
+    print("wrong num cmd line args. usage is python3.3 baseline.py file1 num_partition")
     return 1
 
-  edgeListFile = sys.argv[1]
-  nodeNumNeigh = sys.argv[2]
+  nodeNumNeigh = sys.argv[1]
 
-  partition_num = int(sys.argv[3])
-  edge_num = sum(1 for line in open(edgeListFile))
-  threshold = edge_num / partition_num
+  partition_num = int(sys.argv[2])
+  edge_num = 0
 
   nodes = [] #each node has .neighbor
 
   with open(nodeNumNeigh) as f:
     for line in f:
       split = line.split(":")
+
       curNodeNum = split[0]
       neighbors = []
-      n = ""
-      for i in range (1, len(split)):
-        n += str(split[i]) + " "
-        neighbors.append(split[i])
-      print(str(curNodeNum) + ": " + n)
-      n = ""
+
+      for i in split[1].split():
+        edge_num += 1
+        neighbors.append(i)
+
       newnode = Node(curNodeNum, neighbors)
       nodes.append(newnode)
 
   curGroupEdges = 0
   group_num = 0
+  threshold = edge_num / partition_num
 
   output = open("baseline1.out", 'w+')
 
