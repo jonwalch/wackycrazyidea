@@ -14,10 +14,8 @@ def baseline1():
     return 1
 
   nodeNumNeigh = sys.argv[1]
-
   partition_num = int(sys.argv[2])
   edge_num = 0
-
   nodes = [] #each node has .neighbor
 
   with open(nodeNumNeigh) as f:
@@ -36,7 +34,7 @@ def baseline1():
 
   curGroupEdges = 0
   group_num = 0
-  threshold = edge_num / partition_num
+  threshold = float(edge_num) / float(partition_num)
 
   output = open("baseline1.out", 'w+')
 
