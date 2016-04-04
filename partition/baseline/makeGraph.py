@@ -77,7 +77,7 @@ for i, temp in enumerate(graph):
 
 with open("NeighborInfo.dat","w") as f:
     for key in sorted(neb, key = int):
-        i = key +": "+"\t".join(neb[key])
+        i = key +":"+"\t".join(neb[key])
         f.write(i+"\n")
 
 with open("Edges.dat","w") as f:
