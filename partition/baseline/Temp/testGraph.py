@@ -199,7 +199,7 @@ if __name__ == "__main__":
 		file2 = argv[2]
 	except:
 		#baseline1.dat
-		file1 = "baseline1.dat"#input("Group info: ")
+		file1 = "Test.dat"#input("Group info: ")
 		file2 = "Edges.dat"#input("Edge info: ")
 
 	print("Loading file1...")

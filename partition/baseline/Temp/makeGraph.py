@@ -4,8 +4,8 @@ NUM_VERTICIES = 100000
 MAX_VERT_PER_GROUP = 50000
 MAX_OUTGOING_EDGES_PER_GROUP = 1000 #NOT TOTAL!
 MIN_OUTGOING_EDGES_PER_GROUP = 1000
-MAX_INNER_EDGES_PER_GROUP = 60000
-MIN_INNER_EDGES_PER_GROUP = 60000
+MAX_INNER_EDGES_PER_GROUP = 500000
+MIN_INNER_EDGES_PER_GROUP = 500000
 
 graph = []
 vlist = []
@@ -36,7 +36,7 @@ print("")
 InterGroup = []
 for i, temp in enumerate(graph):
     j = 0
-    while j < rn.randint(MAX_OUTGOING_EDGES_PER_GROUP, MAX_OUTGOING_EDGES_PER_GROUP):
+    while j !=  MAX_OUTGOING_EDGES_PER_GROUP:
         gID = rn.randint(0,len(graph)-1)
         nodeID = rn.randint(0,len(graph[gID])-1)
         if i != gID:
@@ -46,12 +46,12 @@ for i, temp in enumerate(graph):
             InterGroup.append(str(nodeFrom)+"\t"+str(nodeTO))
             j += 1
     print(str(i),"/",str(len(graph)), j)
-graph.append(InterGroup)
+
 
 IntraGroup = []
 for i, temp in enumerate(graph):
     j = 0
-    while j < rn.randint(MIN_INNER_EDGES_PER_GROUP, MAX_INNER_EDGES_PER_GROUP):
+    while j !=  MAX_INNER_EDGES_PER_GROUP:
         gID = i#rn.randint(0,len(graph)-1)
         nodeID = rn.randint(0,len(graph[gID])-1)
     
@@ -67,6 +67,7 @@ for i, temp in enumerate(graph):
             j += 1
 
     print(str(i),"/",str(len(graph)), j)
+graph.append(InterGroup)
 graph.append(IntraGroup)
 
 for i, temp in enumerate(graph):
