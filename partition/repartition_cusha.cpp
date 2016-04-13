@@ -13,9 +13,9 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    char filename1[40];
-    char filename2[40];
-    char filename3[40];
+    char filename1[200];
+    char filename2[200];
+    char filename3[200];
     strcpy(filename1, argv[1]);
     strcpy(filename2, argv[2]);
     strcpy(filename3, argv[3]);
@@ -72,6 +72,16 @@ int main(int argc, char *argv[])
     vmapfile >> tmp;
     assert(!vmapfile.good());
     vmapfile.close();
+
+    // output the original vertex partition results
+    ofstream ovpfile("ori.vertex.part");
+    ovpfile << ori_vertex_num << endl;
+    for(int i = 0; i < ori_vertex_num; i++) {
+        int pid = i / ((ori_vertex_num + maxpart) / (maxpart + 1));
+        assert(pid <= maxpart);
+        ovpfile << i << " " << pid << endl;
+    }
+    cout << "original vertex output completes." << endl;
 
     for(int i = 0; i < ori_vertex_num; i++)
     {
@@ -292,13 +302,14 @@ int main(int argc, char *argv[])
             assert(it->id < ori_vertex_num);
             if(ov[it->id].part_id >= 0)
                 continue;
+            if(parts[i].ori_edge_num >= edge_per_part && ov[it->id].end - ov[it->id].begin > 0)
+                continue;
             ov[it->id].part_id = i;
             parts[i].ovlist.push_back(it->id);
             parts[i].ori_vertex_num++;
             parts[i].ori_edge_num += ov[it->id].end - ov[it->id].begin;
-            //if(parts[i].ori_vertex_num >= vertex_per_part)
-            if(parts[i].ori_edge_num >= edge_per_part)
-                break;
+            //if(parts[i].ori_edge_num >= edge_per_part)
+            //    break;
         }
 
         if(parts[i].ori_edge_num < edge_per_part)
