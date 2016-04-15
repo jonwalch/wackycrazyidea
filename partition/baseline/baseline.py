@@ -1,4 +1,4 @@
-#usage python3.3 baseline.py neighborinfo num_partition
+#usage  with input file format vertex1 vertex2 python3.3 baseline.py neighborinfo num_partition
 import sys
 
 class Node:
@@ -9,36 +9,35 @@ class Node:
 
 def baseline1():
 
-  if len(sys.argv) != 3:
+  if len(sys.argv) < 3:
     print("wrong num cmd line args. usage is python3.3 baseline.py file1 num_partition")
     return 1
 
   nodeNumNeigh = sys.argv[1]
   partition_num = int(sys.argv[2])
   edge_num = 0
-  nodes = [] #each node has .neighbor
+  nodes = {}
 
   with open(nodeNumNeigh) as f:
     for line in f:
-      split = line.split(":")
-
+      split = line.split()
       curNodeNum = split[0]
-      neighbors = []
+      destNode = split[1]
+      edge_num += 1
 
-      for i in split[1].split():
-        edge_num += 1
-        neighbors.append(i)
-
-      newnode = Node(curNodeNum, neighbors)
-      nodes.append(newnode)
+      if curNodeNum in nodes:
+        nodes[curNodeNum].neighbors.append(destNode)
+      else:
+        newnode = Node(curNodeNum, [destNode])
+        nodes[curNodeNum] = newnode
 
   curGroupEdges = 0
   group_num = 0
   threshold = float(edge_num) / float(partition_num)
-
   output = open("baseline1.out", 'w+')
 
-  for i,node in enumerate(nodes):
+  for i,node in nodes.items():
+    #print("node neighbors # = " + str(len(node.neighbors)))
     if curGroupEdges + len(node.neighbors) < threshold: 
       nodes[i].groupNum = group_num
       curGroupEdges += len(node.neighbors)
