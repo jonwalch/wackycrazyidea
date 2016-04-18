@@ -63,7 +63,7 @@ def baseline1(nodes, nodeNumNeigh): #default ordering
     for line in f:
       edges.append(line)
 
-  edges = list(set(edges))
+  #edges = list(set(edges))
   edges = natural_sort(edges)
 
   for i in range(len(edges)):
