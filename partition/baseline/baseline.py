@@ -63,7 +63,7 @@ def baseline1(nodes, nodeNumNeigh): #default ordering
     for line in f:
       edges.append(line)
 
-  #edges = list(set(edges))
+  #edges = list(set(edges)) #remove duplicate edges
   edges = natural_sort(edges)
 
   for i in range(len(edges)):
@@ -76,6 +76,10 @@ def baseline1(nodes, nodeNumNeigh): #default ordering
     else:
       newnode = Node(curNodeNum, [destNode])
       nodes[curNodeNum] = newnode
+
+    if destNode not in nodes:
+      newnode = Node(destNode, [])
+      nodes[destNode] = newnode
 
   return len(edges)
 
@@ -98,6 +102,10 @@ def baseline2(nodes, nodeNumNeigh): #random ordering
     else:
       newnode = Node(curNodeNum, [destNode])
       nodes[curNodeNum] = newnode
+
+    if destNode not in nodes:
+      newnode = Node(destNode, [])
+      nodes[destNode] = newnode
 
   return len(edges)
 
