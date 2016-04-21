@@ -38,8 +38,12 @@ int main(int argc, char *argv[]) {
 		edgeFile.getline(garbage, 2048);
 	}
 	
-	//Malloc original graph:
-	vertex * G = (vertex *) malloc(sizeof(vertex) * numVertices);
+	//Malloc and initialize values for (original) graph:
+	vertex * G = new vertex[numVertices];
+	for(int x = 0; x < numVertices; x++) {
+		G[x].totalEdges = 0;
+		G[x].newStart = 0;
+	}
 	
 	//Read in the list of edges:
 	int orgEdges = 0;
@@ -133,6 +137,6 @@ int main(int argc, char *argv[]) {
 	graphFile.close();
 	
 	//Cleanup and exit:
-	free(G);
+	delete [] G;
 	return 0;
 }
