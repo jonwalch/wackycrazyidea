@@ -72,11 +72,8 @@ int main(int argc, char *argv[]) {
 	
 	//Get starting index for each vertex's new vertex set:
 	int newStart = 0;
-	int totalEdgesInGraph = 0;
 	for(int x = 0; x < numVertices; x++) {
 		G[x].newStart = newStart;
-		
-		totalEdgesInGraph += G[x].outgoingEdges.size() + G[x].totalEdges - 1;//(G[x].totalEdges * 2) - 1;
 		newStart += G[x].totalEdges;
 	}
 	
@@ -88,6 +85,21 @@ int main(int argc, char *argv[]) {
 			int offset2 = G[z].newStart;
 			G[x].outgoingEdges[y] = (G[z].incomingEdges.size() + offset2);
 			G[z].incomingEdges.push_back(offset++);
+		}
+	}
+	
+	//Figure out new edge count:
+	int totalEdgesInGraph = 0;
+	for(int x = 0; x < numVertices; x++) {
+		if(G[x].incomingEdges.size() > 0) {
+			totalEdgesInGraph += (2*G[x].incomingEdges.size() - 2);
+		}
+		if(G[x].outgoingEdges.size() > 0) {
+			totalEdgesInGraph += (2*G[x].outgoingEdges.size() - 2);
+		}
+		
+		if(G[x].incomingEdges.size() > 0 && G[x].outgoingEdges.size() > 0) {
+			totalEdgesInGraph++;
 		}
 	}
 	
@@ -132,6 +144,12 @@ int main(int argc, char *argv[]) {
 			}
 			graphFile << "\n";
 			v++;
+		}
+		
+		if(x < numVertices - 1) {
+			if(v != G[x+1].newStart) {
+				cerr << "SANITY CHECK ERROR ~139: next node should be " << G[x+1].newStart << "; is actually " << v << ".\n";
+			}
 		}
 	}
 	graphFile.close();
