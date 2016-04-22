@@ -91,6 +91,8 @@ int main(int argc, char *argv[]) {
 	//Figure out new edge count:
 	int totalEdgesInGraph = 0;
 	for(int x = 0; x < numVertices; x++) {
+		totalEdgesInGraph += G[x].incomingEdges.size() + G[x].outgoingEdges.size();
+		
 		if(G[x].incomingEdges.size() > 0) {
 			totalEdgesInGraph += (2*G[x].incomingEdges.size() - 2);
 		}
@@ -99,9 +101,10 @@ int main(int argc, char *argv[]) {
 		}
 		
 		if(G[x].incomingEdges.size() > 0 && G[x].outgoingEdges.size() > 0) {
-			totalEdgesInGraph++;
+			totalEdgesInGraph += 2;
 		}
 	}
+	totalEdgesInGraph = totalEdgesInGraph >> 1;
 	
 	//Output vertex mapping
 	stringstream ss1;
@@ -118,30 +121,44 @@ int main(int argc, char *argv[]) {
 	ss2 << argv[1] << ".transgraph";
 	ofstream graphFile(ss2.str().c_str());
 	graphFile << newStart << " " << totalEdgesInGraph << " 001\n";
+	int numActualEdges = 0;
 	for(int x = 0; x < numVertices; x++) {
 		int v = G[x].newStart;
 		
 		for(int y = 0; y < G[x].incomingEdges.size(); y++) {
 			graphFile << (G[x].incomingEdges[y] + 1) << " 99999 ";
+			numActualEdges++;
+			
 			if(y > 0) {
 				graphFile << v << " 99999 ";
+				numActualEdges++;
 			}
+			
 			if(y < G[x].incomingEdges.size() - 1) {
 				graphFile << v + 2 << " 99999 ";
+				numActualEdges++;
 			} else if(G[x].outgoingEdges.size() > 0) {
 				graphFile << v + 2 << " 1 ";
+				numActualEdges++;
 			}
+			
 			graphFile << "\n";
 			v++;
 		}
 		for(int y = 0; y < G[x].outgoingEdges.size(); y++) {
 			graphFile << (G[x].outgoingEdges[y] + 1) << " 99999 ";
+			numActualEdges++;
+			
 			if(y > 0 || G[x].incomingEdges.size() > 0) {
 				graphFile << v << " 1 ";
+				numActualEdges++;
 			}
+			
 			if(y < G[x].outgoingEdges.size() - 1) {
 				graphFile << v + 2 << " 1 ";
+				numActualEdges++;
 			}
+			
 			graphFile << "\n";
 			v++;
 		}
@@ -153,6 +170,11 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	graphFile.close();
+	
+	numActualEdges = numActualEdges >> 1;
+	if(numActualEdges != totalEdgesInGraph) {
+		cerr << "WARNING: Wrong edge count (" << numActualEdges << " instead of " << totalEdgesInGraph << ").\n";
+	}
 	
 	//Cleanup and exit:
 	delete [] G;
