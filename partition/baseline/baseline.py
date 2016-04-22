@@ -61,7 +61,8 @@ def baseline1(nodes, nodeNumNeigh): #default ordering
 
   with open(nodeNumNeigh) as f:
     for line in f:
-      edges.append(line)
+      if line[0] != "#":
+        edges.append(line)
 
   #edges = list(set(edges)) #remove duplicate edges
   edges = natural_sort(edges)
@@ -88,7 +89,8 @@ def baseline2(nodes, nodeNumNeigh): #random ordering
 
   with open(nodeNumNeigh) as f:
     for line in f:
-      edges.append(line)
+      if line[0] != "#":
+        edges.append(line)
 
   shuffle(edges)
 
