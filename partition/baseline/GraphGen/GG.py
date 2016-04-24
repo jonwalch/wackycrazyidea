@@ -4,10 +4,17 @@ import random as rn
 global NUM_VERTICIES, NUM_PARTITIONS, MAX_VERT_PER_GROUP
 global MIN_VERT_PER_GROUP, MAX_OUTGOING_EDGES_PER_GROUP 
 global MIN_OUTGOING_EDGES_PER_GROUP,MAX_INNER_EDGES_PER_GROUP
-global MIN_INNER_EDGES_PER_GROUPm, Even
+global MIN_INNER_EDGES_PER_GROUPm, Even, NUM_EDGES
+
 
 NUM_VERTICIES = 20
-Even = True # All partitions have the same number of Vert?
+
+#Only if random graph
+randomGraph = True
+NUM_EDGES = 100
+
+# if None random fill in the following:
+Even = False # All partitions have the same number of Vert?
 NUM_PARTITIONS =  10    # Only use if Even = True
 
 
@@ -147,12 +154,38 @@ def makeGraph():
 
 	return graph
 
+def makeRandomGraph():
+	global NUM_VERTICIES, NUM_EDGES
+	vertices = []
+	graph = []
+	for i in range(0,NUM_VERTICIES):
+		vertices.append(i)
+
+	i = 0 
+	while i != NUM_EDGES:
+		nodeIndx = rn.randint(0,len(vertices)-1)
+		nodeTo = vertices[nodeIndx]
+		nodeIndx = rn.randint(0,len(vertices)-1)
+		nodeFrom = vertices[nodeIndx]
+		if nodeFrom == nodeTo:
+			if [str(nodeFrom), str(nodeTo)] not in graph:
+					graph.append([str(nodeFrom), str(nodeTo)])
+					i += 1
+		else:
+			graph.append([str(nodeFrom), str(nodeTo)])
+			i += 1
+
+	with open("Random_Graph.dat","w") as f:
+		for line in sorted(graph, key=lambda x: int(x[0])):
+			f.write("\t".join(line)+"\n")
+
+
 def toFile(graph):
 	f1 = "Edges.dat"
 	f2 = "Optimal.dat"
 
 	with open(f1,"w") as f:
-		for p in graph:
+		for p in graph: 
 			if [] not in p.edges:
 				for i in p.edges:
 					f.write(i+"\n")
@@ -170,9 +203,13 @@ def toFile(graph):
     
 
 print("Start")
-graph = makeGraph()
-toFile(graph)
-print("Number of Partitions: ",len(graph))
+if randomGraph == False:
+	graph = makeGraph()
+	toFile(graph)
+	print("Number of Partitions: ",len(graph))
+else:
+	graph = makeRandomGraph()
+
 
 
 
