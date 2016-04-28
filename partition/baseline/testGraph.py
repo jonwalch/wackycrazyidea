@@ -52,24 +52,36 @@ class group(): #Contains group information
 
 def read_grps(filename):
 	global vs, grps, edgs, groups
-	
+	data = []
 	with open(filename) as f:
 		for line in f:
 			line = line.split()
 			if len(line) != 2:
 				print("Error: ", line)
 				continue
-			vs.append(int(line[0]))
-			grps.append(int(line[1]))
+			data.append([int(line[0]),int(line[1])])
+	
+	i = 0
+	for line in data:
+		j = line[0]
+		while j > i:
+			vs.append(-1)
+			grps.append(-1)
 			edgs.append([])
-			grp = int(line[1])
-			if grp in groups:
-				groups[grp].count += 1
-			else:
-				temp = group()
-				temp.grp = grp
-				temp.count = 1
-				groups[grp] = temp
+			i += 1
+		vs.append(line[0])
+		grps.append(line[1])
+		edgs.append([])
+		i += 1
+		grp = line[1]
+		if grp in groups:
+			groups[grp].count += 1
+		else:
+			temp = group()
+			temp.grp = grp
+			temp.count = 1
+			groups[grp] = temp
+
 
 def read_edges(filename):
 	global vs, grps, edgs, groups, total
@@ -86,6 +98,14 @@ def read_edges(filename):
 			groups[grps[i1]].connect2(i1,i2,grps[i2])  
 			total += 1
 
+def getCount():
+	global vs
+	s = 0 
+	for i in vs:
+		if i != -1:
+			s += 1
+	return s
+
 def printGroupInfo():
 	global vs, grps, edgs, groups, total
 	c = 0
@@ -93,7 +113,7 @@ def printGroupInfo():
 	c3 = 0
 	print("======= Information =======")
 	print("Graph:")
-	print("Total number of vertices: ", len(vs))
+	print("Total number of vertices: ", getCount())
 	print("Total number of edges: ", total)
 	print("Total number of groups: ", len(groups))
 	
@@ -112,7 +132,7 @@ def printGroupInfo():
 		c += group.bad
 	print("Graph Summary:")
 	print("Total number of groups: ", len(groups))
-	print("Total number of vertices: ", len(vs))
+	print("Total number of vertices: ", getCount())
 	print("Total number of edges: ", total)
 	print("Total number of edges b/w groups: ", c)
 	print("% Edges that are b/w groups: ", 100*c/(c+c2))
@@ -129,7 +149,7 @@ def writeGroupInfo():
 
 	f.write("======= Information ======="+"\n")
 	f.write("Graph:\n")
-	f.write("Total number of vertices: "+str(len(vs))+"\n")
+	f.write("Total number of vertices: "+str(getCount())+"\n")
 	f.write("Total number of edges: "+str(total)+"\n")
 	f.write("Total number of groups: "+str(len(groups))+"\n")
 	f.write("\n")
@@ -148,7 +168,7 @@ def writeGroupInfo():
 
 	f.write("Graph Summary:"+"\n")
 	f.write("Total number of groups: "+ str(len(groups))+"\n")
-	f.write("Total number of vertices: "+ str(len(vs))+"\n")
+	f.write("Total number of vertices: "+ str(getCount())+"\n")
 	f.write("Total number of edges: "+ str(total)+"\n")
 	f.write("Total number of edges b/w groups: "+ str(c)+"\n")
 	f.write("% Edges that are b/w groups: "+str(100*c/(c+c2))+"\n")
@@ -157,32 +177,6 @@ def writeGroupInfo():
 
 	f.close()
 
-def mathematica():
-	global vs, grps, edgs, groups, total
-
-	filename = input("File name: ")
-	with open(filename,"w") as f:	
-		for i, v in enumerate(vs):
-			for e in edgs[i]:
-				f.write(str(v)+"->"+str(e)+" ")
-
-	with open("color"+filename, "w") as f:
-		for i, v in enumerate(vs):
-			f.write(str(grps[i])+" ")
-	
-	with open("groups_"+filename, "w") as f:
-		temp = groups
-		for grp in temp:
-			grp1 = temp[grp]
-			for i in grp1.connected_groups:
-				f.write(str(grp1.grp)+"->"+str(i)+" ")
-
-	with open("group_weight_"+filename, "w") as f:
-		temp = groups
-		for grp in temp:
-			grp1 = temp[grp]
-			for i in grp1.weight:
-				f.write(str(i)+" ")
 
 if __name__ == "__main__":
 	global vs, grps, edgs, groups, total
@@ -209,7 +203,5 @@ if __name__ == "__main__":
 	printGroupInfo()
 	writeGroupInfo()
 	print("")
-	print("Making Mathematica Files")
-	mathematica()
 
 	input("\nENTERtoEXIT")
