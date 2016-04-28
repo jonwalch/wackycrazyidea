@@ -56,7 +56,7 @@ def read_grps(filename):
 	with open(filename) as f:
 		for line in f:
 			line = line.split()
-			if len(line) != 2:
+                        if len(line) != 2:
 				print("Error: ", line)
 				continue
 			vs.append(int(line[0]))
@@ -76,15 +76,16 @@ def read_edges(filename):
 	total = 0
 	with open(filename) as f:
 		for line in f:
-			line = line.split()
-			if len(line) != 2:
-				print("Error: ", line)
-				continue
-			i1 = int(line[0])
-			i2 = int(line[1])
-			edgs[i1].append(vs[i2])
-			groups[grps[i1]].connect2(i1,i2,grps[i2])  
-			total += 1
+                        if line[0] != "#":
+                            line = line.split()
+                            if len(line) != 2: 
+                                    print("Error: ", line)
+                                    continue
+                            i1 = int(line[0])
+                            i2 = int(line[1])
+                            edgs[i1].append(vs[i2])
+                            groups[grps[i1]].connect2(i1,i2,grps[i2])  
+                            total += 1
 
 def printGroupInfo():
 	global vs, grps, edgs, groups, total
