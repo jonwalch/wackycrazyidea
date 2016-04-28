@@ -7,10 +7,10 @@ global MIN_OUTGOING_EDGES_PER_GROUP,MAX_INNER_EDGES_PER_GROUP
 global MIN_INNER_EDGES_PER_GROUPm, Even, NUM_EDGES
 
 
-NUM_VERTICIES = 20
+NUM_VERTICIES = 50
 
 #Only if random graph
-randomGraph = True
+randomGraph = False
 NUM_EDGES = 100
 
 # if None random fill in the following:
@@ -18,11 +18,11 @@ Even = False # All partitions have the same number of Vert?
 NUM_PARTITIONS =  10    # Only use if Even = True
 
 
-MAX_VERT_PER_GROUP = 5
-MIN_VERT_PER_GROUP = 5
+MAX_VERT_PER_GROUP = 10
+MIN_VERT_PER_GROUP = 10
 
-MAX_OUTGOING_EDGES_PER_GROUP = 1
-MIN_OUTGOING_EDGES_PER_GROUP = 1
+MAX_OUTGOING_EDGES_PER_GROUP = 10
+MIN_OUTGOING_EDGES_PER_GROUP = 10
 
 MAX_INNER_EDGES_PER_GROUP = 10
 MIN_INNER_EDGES_PER_GROUP = 10
@@ -148,7 +148,7 @@ def makeGraph():
 
 	#"Make more connections"		
 	for p in graph:
-		size = MAX_VERT_PER_GROUP - p.getSize()
+		size = MAX_VERT_PER_GROUP - p.getSize() - 1
 		p.InterGroup(size, graph)
 		p.IntraGroup()
 
@@ -206,7 +206,8 @@ print("Start")
 if randomGraph == False:
 	graph = makeGraph()
 	toFile(graph)
-	print("Number of Partitions: ",len(graph))
+	if Even:
+		print("Number of Partitions: ",len(graph))
 else:
 	graph = makeRandomGraph()
 
