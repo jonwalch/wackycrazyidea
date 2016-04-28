@@ -1,6 +1,6 @@
 #usage python3.3 baseline.py neighborinfo num_partition
 import sys
-
+#T
 class Node:
   def __init__(self, num, neighbors):
     self.num = num
