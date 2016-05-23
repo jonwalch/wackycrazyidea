@@ -1,12 +1,13 @@
 import random as rn 
+import sys
 
 ### Parameters ###
 global NUM_VERTICIES, NUM_PARTITIONS, MAX_VERT_PER_GROUP
 global MIN_VERT_PER_GROUP, MAX_OUTGOING_EDGES_PER_GROUP 
 global MIN_OUTGOING_EDGES_PER_GROUP,MAX_INNER_EDGES_PER_GROUP
-global MIN_INNER_EDGES_PER_GROUPm, Even, NUM_EDGES
+global MIN_INNER_EDGES_PER_GROUPm, Even, NUM_EDGES, randomGraph
 
-
+"""
 NUM_VERTICIES = 50
 
 #Only if random graph
@@ -26,6 +27,7 @@ MIN_OUTGOING_EDGES_PER_GROUP = 10
 
 MAX_INNER_EDGES_PER_GROUP = 10
 MIN_INNER_EDGES_PER_GROUP = 10
+"""
 
 #Todo: add loop?
 #####################
@@ -200,9 +202,108 @@ def toFile(graph):
 		for i in sorted(temp,key=lambda x: int(x[0])):
 			f.write("\t".join(i)+"\n")
 
+def barabasi(n, m0, m):
+	#Load graph with initial nodes
+	g = [] 
+	total_edges = 0 
+	for i in range(m0):
+		temp = [int(x) for x in range(m0) if x != i] # Connect all nodes
+		total_edges += len(temp)
+		g.append(temp)
+
+	for i in range(m0+1,n):
+		sys.stdout.write("Progress: %d%%     \r" %(100*i/n))
+		sys.stdout.flush()
+		temp = [] #All connections will be saved here
+		while(len(temp) < m):
+			j = rn.randint(0,len(g)-1) #Pick random
+			p = len(g[j])/total_edges
+			R = rn.uniform(0,1)
+			if p > R and j not in temp and j != i:
+				temp.append(j)
+				g[j].append(i)
+				total_edges += 2
+		g.append(temp)
+	
+
+	with open("Barabasi_Albert_Graph.dat","w") as f:
+		for i, temp in enumerate(g):
+			for j in temp:
+				f.write(str(i)+"\t"+str(j)+"\n")
+	#Test
+	degree = {} 
+	for i, temp in enumerate(g):
+		#print(i, len(temp))
+		if len(temp)in degree:
+			degree[len(temp)] += 1
+		else:
+			degree[len(temp)] = 1
+
+	with open("distribution_plot.dat","w") as f:
+		for key in degree:
+			f.write(str(key)+"\t"+str(degree[key])+"\n")
+
+	return g
+
+
+
+
+
     
+def options():
+	global NUM_VERTICIES, NUM_PARTITIONS, MAX_VERT_PER_GROUP
+	global MIN_VERT_PER_GROUP, MAX_OUTGOING_EDGES_PER_GROUP 
+	global MIN_OUTGOING_EDGES_PER_GROUP,MAX_INNER_EDGES_PER_GROUP
+	global MIN_INNER_EDGES_PER_GROUPm, Even, NUM_EDGES, randomGraph
+	print("Options")
+	print("(0) RandomGraph | (1) OpimalRandomGraph |(2) EqualPartition")
+	print("(3) Barabasi_Albert")
+
+	op = eval(input("Input => "))
+	randomGraph = False
+	Even = False
+
+	if 0 <= op <= 2:
+		NUM_VERTICIES = eval(input("NUM_VERTICIES = "))
+	if op == 0:
+		randomGraph = True
+		NUM_EDGES = eval(input("NUM_EDGES = "))
+	elif op == 1:
+		MAX_VERT_PER_GROUP = eval(input("MAX_VERT_PER_GROUP = "))
+		MIN_VERT_PER_GROUP = eval(input("MIN_VERT_PER_GROUP = "))
+
+		MAX_OUTGOING_EDGES_PER_GROUP = eval(input("MAX_OUTGOING_EDGES_PER_GROUP = "))
+		MIN_OUTGOING_EDGES_PER_GROUP = eval(input("MIN_OUTGOING_EDGES_PER_GROUP = "))
+
+		MAX_INNER_EDGES_PER_GROUP = eval(input("MAX_INNER_EDGES_PER_GROUP = "))
+		MIN_INNER_EDGES_PER_GROUP = eval(input("MIN_INNER_EDGES_PER_GROUP = "))
+	elif op == 2:
+		Even = True
+		NUM_PARTITIONS = eval(input("NUM_PARTITIONS = "))
+	elif op == 3:
+		n = eval(input("Total_num_nodes(n) = "))
+		m0 = eval(input("Initial_num_nodes(m0) = "))
+		m = eval(input("Degree_per_node(m < m0) = "))
+		if m < m0:
+			barabasi(n, m0, m)
+		else:
+			error("m > m0 : Degree_per_node too large")
+			op = input("Exit?(y | n) ")
+			if op == "y" or op == "Y":
+				exit(0)
+			options()
+		exit(0)
+	else:
+		error("Not valid choice!")
+		op = input("Exit?(y | n) ")
+		if op == "y" or op == "Y":
+			exit(0)
+		options()
 
 print("Start")
+print("GraphGen 1.0\n")
+options()
+
 if randomGraph == False:
 	graph = makeGraph()
 	toFile(graph)
@@ -210,7 +311,5 @@ if randomGraph == False:
 		print("Number of Partitions: ",len(graph))
 else:
 	graph = makeRandomGraph()
-
-
 
 
