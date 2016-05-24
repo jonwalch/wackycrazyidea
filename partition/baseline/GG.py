@@ -254,7 +254,7 @@ def options():
 	global NUM_VERTICIES, NUM_PARTITIONS, MAX_VERT_PER_GROUP
 	global MIN_VERT_PER_GROUP, MAX_OUTGOING_EDGES_PER_GROUP 
 	global MIN_OUTGOING_EDGES_PER_GROUP,MAX_INNER_EDGES_PER_GROUP
-	global MIN_INNER_EDGES_PER_GROUPm, Even, NUM_EDGES, randomGraph
+	global MIN_INNER_EDGES_PER_GROUP, Even, NUM_EDGES, randomGraph
 	print("Options")
 	print("(0) RandomGraph | (1) OpimalRandomGraph |(2) EqualPartition")
 	print("(3) Barabasi_Albert")
@@ -268,7 +268,13 @@ def options():
 	if op == 0:
 		randomGraph = True
 		NUM_EDGES = eval(input("NUM_EDGES = "))
-	elif op == 1:
+	elif op == 1 or op == 2:
+		if op == 2:
+			Even = True
+			NUM_PARTITIONS = eval(input("NUM_PARTITIONS = "))
+			if (NUM_VERTICIES%NUM_PARTITIONS) != 0:
+				error("Can not distribute evenly!")
+				exit(0)
 		MAX_VERT_PER_GROUP = eval(input("MAX_VERT_PER_GROUP = "))
 		MIN_VERT_PER_GROUP = eval(input("MIN_VERT_PER_GROUP = "))
 
@@ -277,9 +283,7 @@ def options():
 
 		MAX_INNER_EDGES_PER_GROUP = eval(input("MAX_INNER_EDGES_PER_GROUP = "))
 		MIN_INNER_EDGES_PER_GROUP = eval(input("MIN_INNER_EDGES_PER_GROUP = "))
-	elif op == 2:
-		Even = True
-		NUM_PARTITIONS = eval(input("NUM_PARTITIONS = "))
+	
 	elif op == 3:
 		n = eval(input("Total_num_nodes(n) = "))
 		m0 = eval(input("Initial_num_nodes(m0) = "))
