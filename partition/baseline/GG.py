@@ -1,6 +1,6 @@
 import random as rn 
-import sys
-
+import sys, time
+from sys import argv
 ### Parameters ###
 global NUM_VERTICIES, NUM_PARTITIONS, MAX_VERT_PER_GROUP
 global MIN_VERT_PER_GROUP, MAX_OUTGOING_EDGES_PER_GROUP 
@@ -202,7 +202,7 @@ def toFile(graph):
 		for i in sorted(temp,key=lambda x: int(x[0])):
 			f.write("\t".join(i)+"\n")
 
-def barabasi(n, m0, m):
+def barabasi2(n, m0, m):
 	#Load graph with initial nodes
 	g = [] 
 	total_edges = 0 
@@ -239,14 +239,52 @@ def barabasi(n, m0, m):
 		else:
 			degree[len(temp)] = 1
 
-	with open("distribution_plot.dat","w") as f:
+	with open("distribution_plot2.dat","w") as f:
 		for key in degree:
 			f.write(str(key)+"\t"+str(degree[key])+"\n")
 
 	return g
 
+def barabasi(n, m0, m):
+	g = []
+	deg = {}
+	ti = time.time()
+	for i in range(m0):
+		for x in range(m0):
+			if x != i:
+				g.append([i, int(x)]) 
+		deg[i] = m0 - 1
 
+	for i in range(m0+1, n):
+		sys.stdout.write("Progress: %d%%     \r" %(100*i/n))
+		sys.stdout.flush()
 
+		temp = 0
+		arr = []
+		deg[i] = 0
+		while(temp < m):
+			j = rn.randint(0,len(g)-1)
+			j = g[j][1]
+			if j != i and [i, j] not in arr:
+				g.append([j, i])
+				g.append([i, j])
+				deg[i] += 1
+				deg[j] += 1
+
+				arr.append([i, j])
+				temp += 1
+
+	degree = {} 
+	for key in deg:
+		if deg[key] in degree:
+			degree[deg[key]] += 1
+		else:
+			degree[deg[key]] = 1
+
+	with open("distribution_plot%s.dat"%str(n),"w") as f:
+		for key in degree:
+			f.write(str(key)+"\t"+str(degree[key]/len(g))+"\n")
+	print(time.time()-ti)
 
 
     
@@ -288,7 +326,7 @@ def options():
 		n = eval(input("Total_num_nodes(n) = "))
 		m0 = eval(input("Initial_num_nodes(m0) = "))
 		m = eval(input("Degree_per_node(m < m0) = "))
-		if m < m0:
+		if m <= m0:
 			barabasi(n, m0, m)
 		else:
 			error("m > m0 : Degree_per_node too large")
@@ -306,7 +344,22 @@ def options():
 
 print("Start")
 print("GraphGen 1.0\n")
-options()
+
+if len(argv) > 1:
+	n = int(argv[1])
+	m0 = int(argv[2])
+	m = int(argv[3])
+	if m <= m0:
+		barabasi(n, m0, m)
+	else:
+		error("m > m0 : Degree_per_node too large")
+		op = input("Exit?(y | n) ")
+		if op == "y" or op == "Y":
+			exit(0)
+		options()
+	exit(0)
+else:
+	options()
 
 if randomGraph == False:
 	graph = makeGraph()
