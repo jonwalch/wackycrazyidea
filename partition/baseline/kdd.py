@@ -51,8 +51,8 @@ def main():
         #else: #duplicate or v,u already accounted for
           #print((u,v))
 
-  print(edgesDone)
-  print(edgesToCut)
+  #print(edgesDone)
+  #print(edgesToCut)
   numEdges = edgesDone + edgesToCut
 
   pairList = []
@@ -67,7 +67,6 @@ def main():
 
     sharedEdges = set(cutEdges[i]).intersection(set(cutEdges[j])) #find common elements between the two
     sharedEdges = list(sharedEdges)
-    #print(sharedEdges)
 
     if len(sharedEdges) == 0: #if no edges to partition go to next iteration
       continue
@@ -104,14 +103,6 @@ def main():
     edgeCluster[j] += setB
 
   partitionedEdges = 0
-
-  for i in edgeCluster:
-    print(i)
-    print(edgeCluster[i])
-    partitionedEdges += len(edgeCluster[i])
-
-  print(numEdges)
-  print(partitionedEdges)
 
 if __name__ == "__main__":
   main()
