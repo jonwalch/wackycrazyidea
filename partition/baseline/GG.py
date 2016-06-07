@@ -86,7 +86,7 @@ class partition():
 			self.inner.append(str(self.vertices[0])+"\t"+str(self.vertices[0]))
 			return
 
-		count = 0 
+		count = self.edges 
 		domain = rn.randint(MIN_INNER_EDGES_PER_GROUP, MAX_INNER_EDGES_PER_GROUP)
 		while count != domain:
 			#print(count,"3", domain)
