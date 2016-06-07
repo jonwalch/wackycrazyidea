@@ -158,6 +158,21 @@ def makeGraph():
 
 def makeRandomGraph():
 	global NUM_VERTICIES, NUM_EDGES
+	edges = []
+	graph = []
+	for i in range(0, NUM_VERTICIES):
+		for j in range(0, NUM_VERTICIES):
+			if i != j:
+				edges.append(str(i)+"\t"+str(j))
+	i = 0 
+	while(i < NUM_VERTICIES):
+		j = rn.randint(0, len(edges))
+		graph.append(edges.pop(j))
+		i += 1
+
+"""
+def makeRandomGraphOld():
+	global NUM_VERTICIES, NUM_EDGES
 	vertices = []
 	graph = []
 	for i in range(0,NUM_VERTICIES):
@@ -181,10 +196,10 @@ def makeRandomGraph():
 		for line in sorted(graph, key=lambda x: int(x[0])):
 			f.write("\t".join(line)+"\n")
 
-
-def toFile(graph):
-	f1 = "Edges.dat"
-	f2 = "Optimal.dat"
+"""
+def toFile(graph, name = ""):
+	f1 = "Edges%s.dat" %name
+	f2 = "Optimal%s.dat" %name
 
 	with open(f1,"w") as f:
 		for p in graph: 
@@ -306,6 +321,12 @@ def options():
 	if op == 0:
 		randomGraph = True
 		NUM_EDGES = eval(input("NUM_EDGES = "))
+		if(NUM_VERTICIES**2 - NUM_VERTICIES) < NUM_EDGES:
+			error("More edges requested than can be produced")
+			print("(NUM_VERTICIES**2 - NUM_VERTICIES) < NUM_EDGES")
+			exit(0)  
+		if (NUM_EDGES < NUM_VERTICIES -1):
+			print("Warning: (NUM_EDGES < NUM_VERTICIES -1)")
 	elif op == 1 or op == 2:
 		if op == 2:
 			Even = True
@@ -349,6 +370,7 @@ print("Start")
 print("GraphGen 1.0\n")
 
 if len(argv) > 1:
+	"""
 	n = int(argv[1])
 	m0 = int(argv[2])
 	m = int(argv[3])
@@ -361,6 +383,21 @@ if len(argv) > 1:
 			exit(0)
 		options()
 	exit(0)
+	"""
+	Even = True
+	NUM_VERTICIES = int(argv[1])
+	NUM_PARTITIONS = int(argv[2])
+	MAX_VERT_PER_GROUP = NUM_VERTICIES/NUM_PARTITIONS
+	MIN_VERT_PER_GROUP = NUM_VERTICIES/NUM_PARTITIONS
+	MAX_OUTGOING_EDGES_PER_GROUP = int(argv[3])
+	MIN_OUTGOING_EDGES_PER_GROUP = int(argv[3])
+	MAX_INNER_EDGES_PER_GROUP = int(argv[4])
+	MIN_INNER_EDGES_PER_GROUP = int(argv[4])
+	graph = makeGraph()
+	toFile(graph, argv[5])
+	exit(0)
+
+
 else:
 	options()
 
