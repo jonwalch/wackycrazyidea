@@ -183,6 +183,9 @@ def makeRandomGraph():
 
 	i = 0 
 	while i != NUM_EDGES:
+		if i%100 == 0:
+			sys.stdout.write("%d%%         \r"%(i/NUM_VERTICIES))
+			sys.stdout.flush()
 		nodeIndx = rn.randint(0,len(vertices)-1)
 		nodeTo = vertices[nodeIndx]
 		nodeIndx = rn.randint(0,len(vertices)-1)
