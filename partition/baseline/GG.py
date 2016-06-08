@@ -156,6 +156,9 @@ def makeGraph():
 
 	return graph
 
+
+"""
+
 def makeRandomGraph():
 	global NUM_VERTICIES, NUM_EDGES
 	edges = []
@@ -169,8 +172,8 @@ def makeRandomGraph():
 		j = rn.randint(0, len(edges))
 		graph.append(edges.pop(j))
 		i += 1
-
 """
+
 def makeRandomGraphOld():
 	global NUM_VERTICIES, NUM_EDGES
 	vertices = []
@@ -184,11 +187,13 @@ def makeRandomGraphOld():
 		nodeTo = vertices[nodeIndx]
 		nodeIndx = rn.randint(0,len(vertices)-1)
 		nodeFrom = vertices[nodeIndx]
+		"""
 		if nodeFrom == nodeTo:
 			if [str(nodeFrom), str(nodeTo)] not in graph:
 					graph.append([str(nodeFrom), str(nodeTo)])
 					i += 1
-		else:
+		"""
+		if nodeFrom != nodeTo and [str(nodeFrom), str(nodeTo)] not in graph:
 			graph.append([str(nodeFrom), str(nodeTo)])
 			i += 1
 
@@ -196,7 +201,6 @@ def makeRandomGraphOld():
 		for line in sorted(graph, key=lambda x: int(x[0])):
 			f.write("\t".join(line)+"\n")
 
-"""
 def toFile(graph, name = ""):
 	f1 = "Edges%s.dat" %name
 	f2 = "Optimal%s.dat" %name
