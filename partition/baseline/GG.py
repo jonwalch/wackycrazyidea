@@ -174,7 +174,7 @@ def makeRandomGraph():
 		i += 1
 """
 
-def makeRandomGraphOld():
+def makeRandomGraph():
 	global NUM_VERTICIES, NUM_EDGES
 	vertices = []
 	graph = []
