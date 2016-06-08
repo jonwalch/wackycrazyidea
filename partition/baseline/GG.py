@@ -184,7 +184,7 @@ def makeRandomGraph():
 	i = 0 
 	while i != NUM_EDGES:
 		if i%100 == 0:
-			sys.stdout.write("%d%%         \r"%(i/NUM_VERTICIES))
+			sys.stdout.write("%d%%\         \r"%(i))
 			sys.stdout.flush()
 		nodeIndx = rn.randint(0,len(vertices)-1)
 		nodeTo = vertices[nodeIndx]
@@ -306,7 +306,11 @@ def barabasi(n, m0, m):
 	with open("distribution_plot%s.dat"%str(n),"w") as f:
 		for key in degree:
 			f.write(str(key)+"\t"+str(degree[key]/len(g))+"\n")
-	print(time.time()-ti)
+
+	with open("Barabasi_%s.dat"%str(n),"w") as f:
+		for line in g:
+			f.write(str(line[0])+"\t"+str(line[1])+"\n")
+	print("Tiem: ", time.time()-ti)
 
 
     
