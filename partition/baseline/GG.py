@@ -180,25 +180,27 @@ def makeRandomGraph():
 	graph = []
 	for i in range(0,NUM_VERTICIES):
 		vertices.append(i)
+		graph.append([])
 
 	i = 0 
 	while i != NUM_EDGES:
 		if i%100 == 0:
-			sys.stdout.write("%d%%\         \r"%(i))
+			sys.stdout.write("%d         \r"%(i))
 			sys.stdout.flush()
 		nodeIndx = rn.randint(0,len(vertices)-1)
-		nodeTo = vertices[nodeIndx]
+		nodeTo = nodeIndx#vertices[nodeIndx]
 		nodeIndx = rn.randint(0,len(vertices)-1)
-		nodeFrom = vertices[nodeIndx]
+		nodeFrom = nodeIndx#vertices[nodeIndx]
 		"""
 		if nodeFrom == nodeTo:
 			if [str(nodeFrom), str(nodeTo)] not in graph:
 					graph.append([str(nodeFrom), str(nodeTo)])
 					i += 1
 		"""
-		if nodeFrom != nodeTo and [str(nodeFrom), str(nodeTo)] not in graph:
-			graph.append([str(nodeFrom), str(nodeTo)])
+		if nodeFrom != nodeTo and [str(nodeFrom), str(nodeTo)] not in graph[nodeFrom]:
+			graph[nodeFrom].append([str(nodeFrom), str(nodeTo)])
 			i += 1
+	graph = [item for sublist in graph for item in sublist]
 
 	with open("Random_Graph.dat","w") as f:
 		for line in sorted(graph, key=lambda x: int(x[0])):
